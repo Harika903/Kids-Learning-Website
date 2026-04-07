@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Alphabet Quiz</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to right, #fbc2eb, #a6c1ee);
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      color: #4a148c;
+      padding: 20px;
+    }
+
+    .menu, .question-box {
+      background: #fff;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+      background-color: #7e57c2;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #5e35b1;
+    }
+
+    .options button {
+      display: block;
+      margin: 10px auto;
+    }
+
+    .result {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #ffcc80;
+      border-radius: 15px;
+      text-decoration: none;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <img id="userAvatar" alt="Your Avatar" width="90" height="90" style="border-radius: 60%; position: fixed; top: 40px; right: 70px; z-index: 999;">
+  <h1>📝 Alphabet Quiz</h1>
+
+  <div class="menu" id="quizMenu">
+    <h2>Select Quiz Length</h2>
+    <button onclick="startQuiz(5)">5 Alphabets Quiz</button>
+    <button onclick="startQuiz(10)">10 Alphabets Quiz</button>
+    <button onclick="startQuiz(20)">20 Alphabets Quiz</button>
+  </div>
+
+  <div class="question-box" id="quizBox" style="display:none;">
+    <div id="question"></div>
+    <div class="options" id="options"></div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <a class="back" href="learn.html">⬅️ Back to Learn</a>
+
+  <audio id="clapSound" src="sounds/clap.mp3"></audio>
+  <audio id="oopsSound" src="sounds/wrong.mp3"></audio>
+
+  <script>
+    const fullQuizData = [
+      { question: "Which letter comes after A?", options: ["C", "B", "D", "E"], answer: "B" },
+      { question: "Which letter starts the word 'Zebra'?", options: ["Z", "G", "X", "Y"], answer: "Z" },
+      { question: "Which letter is a missingl A,B,__,D?", options: ["A", "I", "C", "T"], answer: "C" },
+      { question: "Which letter comes before M?", options: ["K", "L", "N", "O"], answer: "L" },
+      { question: "Which letter starts the word 'Apple'?", options: ["B", "D", "E", "A"], answer: "A" },
+      { question: "Which letter comes after J?", options: ["L", "I", "K", "M"], answer: "K" },
+      { question: "Which letter is used in 'Elephant'?", options: ["F", "E", "U", "O"], answer: "E" },
+      { question: "Which letter comes before G?", options: ["F", "H", "E", "I"], answer: "F" },
+      { question: "Which letter starts the word 'Monkey'?", options: ["M", "N", "K", "O"], answer: "M" },
+      { question: "Which letter is last in Alphabets?", options: ["X", "Y", "Z", "W"], answer: "Z" },
+      { question: "Which letter comes after C?", options: ["D", "E", "F", "G"], answer: "D" },
+      { question: "Which letter comes before T?", options: ["S", "U", "V", "R"], answer: "S" },
+      { question: "Which letter comes after W?", options: ["V", "X", "Y", "Z"], answer: "X" },
+      { question: "Which letter is first?", options: ["Z", "B", "A", "C"], answer: "A" },
+      { question: "Which letter comes before D?", options: ["E", "C", "B", "F"], answer: "C" },
+      { question: "Which letter is used in 'Queen'?", options: ["Q", "P", "K", "L"], answer: "Q" },
+      { question: "Which letter comes after R?", options: ["S", "Q", "T", "U"], answer: "S" },
+      { question: "Which letter starts the word 'Ball'?", options: ["B", "C", "D", "F"], answer: "B" },
+      { question: "Which letter comes before Z?", options: ["Y", "W", "X", "V"], answer: "Y" },
+      { question: "Which letter is missing M,N__P,Q?", options: ["O", "E", "M", "N"], answer: "O" }
+    ];
+
+    let quizData = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    const quizMenu = document.getElementById("quizMenu");
+    const quizBox = document.getElementById("quizBox");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const resultEl = document.getElementById("result");
+    const clapSound = document.getElementById("clapSound");
+    const oopsSound = document.getElementById("oopsSound");
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz(count) {
+      quizMenu.style.display = "none";
+      quizBox.style.display = "block";
+      quizData = shuffle(fullQuizData).slice(0, count);
+      currentIndex = 0;
+      score = 0;
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const current = quizData[currentIndex];
+      questionEl.textContent = `Q${currentIndex + 1}: ${current.question}`;
+      optionsEl.innerHTML = "";
+      resultEl.textContent = "";
+
+      current.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(opt);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected) {
+      const correct = quizData[currentIndex].answer;
+      if (selected === correct) {
+        resultEl.textContent = "🎉 Correct!";
+        clapSound.play();
+        score += 1;
+        localStorage.setItem("quizPoints", score); // Store points
+      } else {
+        resultEl.textContent = `❌ Oops! Correct answer is "${correct}"`;
+        oopsSound.play();
+      }
+
+      currentIndex++;
+      if (currentIndex < quizData.length) {
+        setTimeout(loadQuestion, 1500);
+      } else {
+        setTimeout(() => {
+          questionEl.textContent = `✅ Quiz Completed! 🎯 Your Score: ${score}`;
+          optionsEl.innerHTML = "";
+          resultEl.textContent = "";
+          const today = new Date().toISOString().split("T")[0];
+          const alreadyDone = localStorage.getItem("letters_date") === today;
+          if (!alreadyDone) {
+            localStorage.setItem("letters_done", "true");
+            localStorage.setItem("letters_date", today);
+            let points = parseInt(localStorage.getItem("totalPoints") || "0");
+            points += 20;
+            localStorage.setItem("totalPoints", points);
+            alert("✅ You've completed today's learning task and earned 20 points!");
+          } else {
+            alert("🎉 Task already completed today! No extra points awarded.");
+          }
+        }, 2000);
+
+      }
+    }
+    // Avatar script
+    const avatarPath = localStorage.getItem("kidAvatar");
+    if (avatarPath) {
+      document.getElementById("userAvatar").src = avatarPath;
+    } else {
+      document.getElementById("userAvatar").style.display = "none";
+    } 
+  </script>
+</body>
+</html>

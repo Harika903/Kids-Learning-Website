@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Letters Learning</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to right, #f8cdda, #f1f1f1);
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #d63384;
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
+
+    .letters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .letter {
+      font-size: 30px;
+      background: #ff99cc;
+      padding: 15px 25px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .letter:hover {
+      background: #ff66b2;
+    }
+
+    #resultText {
+      margin-top: 30px;
+      font-size: 28px;
+      color: #333;
+    }
+
+    #image {
+      margin-top: 20px;
+      max-width: 250px;
+      height: auto;
+      display: none;
+    }
+
+    .back-btn {
+      margin-top: 40px;
+      display: inline-block;
+      background-color: #d63384;
+      color: white;
+      font-size: 20px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #c2185b;
+    }
+  </style>
+</head>
+<body>
+  <img id="userAvatar" alt="Your Avatar" width="60" height="60" style="border-radius: 50%; position: fixed; top: 20px; right: 80px; z-index: 999;">
+  <h1>Tap a Letter to Learn</h1>
+
+  <div class="letters">
+    <div class="letter">A</div><div class="letter">B</div><div class="letter">C</div>
+    <div class="letter">D</div><div class="letter">E</div><div class="letter">F</div>
+    <div class="letter">G</div><div class="letter">H</div><div class="letter">I</div>
+    <div class="letter">J</div><div class="letter">K</div><div class="letter">L</div>
+    <div class="letter">M</div><div class="letter">N</div><div class="letter">O</div>
+    <div class="letter">P</div><div class="letter">Q</div><div class="letter">R</div>
+    <div class="letter">S</div><div class="letter">T</div><div class="letter">U</div>
+    <div class="letter">V</div><div class="letter">W</div><div class="letter">X</div>
+    <div class="letter">Y</div><div class="letter">Z</div>
+  </div>
+
+  <div id="resultText"></div>
+  <img id="image" src="" alt="Image" />
+
+  <!-- Back Button -->
+  <a href="quiz.html" class="qux-btn"> ❓ Take a Quix </a>
+  <a href="learn.html" class="back-btn">🔙 Back to Learn</a>
+
+  <script>
+    const data = {
+      A: { word: "Apple🍎", image: "image/A.png" },
+      B: { word: "Ball🏀", image: "image/B.png" },
+      C: { word: "Cat🐱", image: "image/C.png" },
+      D: { word: "Dog🐕", image: "image/D.png" },
+      E: { word: "Elephant🐘", image: "image/E.png" },
+      F: { word: "Fish🐟", image: "image/F.png" },
+      G: { word: "Grapes🍇", image: "image/G.png" },
+      H: { word: "Hat🎩", image: "image/H.png" },
+      I: { word: "Ice cream🍨", image: "image/I.png" },
+      J: { word: "Jug🏺", image: "image/J.png" },
+      K: { word: "Kite🪁", image: "image/K.png" },
+      L: { word: "Lion🦁", image: "image/L.png" },
+      M: { word: "Monkey🐒", image: "image/M.png" },
+      N: { word: "Nest🪺", image: "image/N.png" },
+      O: { word: "Orange🍊", image: "image/O.png" },
+      P: { word: "Parrot🦜", image: "image/P.png" },
+      Q: { word: "Queen👸", image: "image/Q.png" },
+      R: { word: "Rabbit🐇", image: "image/R.png" },
+      S: { word: "Sun🌞", image: "image/S.png" },
+      T: { word: "Tiger🐅", image: "image/T.png" },
+      U: { word: "Umbrella☔", image: "image/U.png" },
+      V: { word: "Van🚐", image: "image/V.png" },
+      W: { word: "Watch⌚", image: "image/W.png" },
+      X: { word: "Xmas Tree🎄", image: "image/X.png" },
+      Y: { word: "Yak🦬", image: "image/Y.png" },
+      Z: { word: "Zebra🦓", image: "image/Z.png" }
+    };
+
+    let selectedVoice = null;
+
+    function loadVoices() {
+      const voices = speechSynthesis.getVoices();
+      selectedVoice = voices.find(v => v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("google")) || voices[0];
+    }
+
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    window.onload = () => setTimeout(loadVoices, 100);
+
+    document.querySelectorAll('.letter').forEach(letter => {
+      letter.addEventListener('click', () => {
+        const clickedChar = letter.textContent;
+        const info = data[clickedChar];
+
+        document.getElementById('resultText').textContent = `${clickedChar} is for ${info.word}`;
+        const img = document.getElementById('image');
+        img.src = info.image;
+        img.style.display = "block";
+
+        speechSynthesis.cancel(); // Clear any ongoing speech
+
+        setTimeout(() => {
+          const utterThis = new SpeechSynthesisUtterance(`${clickedChar} is for ${info.word.replace(/[^a-zA-Z ]/g, '')}`);
+          if (selectedVoice) utterThis.voice = selectedVoice;
+          utterThis.rate = 0.9;
+          utterThis.pitch = 1;
+          speechSynthesis.speak(utterThis);
+        }, 200);
+      });
+    });
+    const avatarPath = localStorage.getItem("kidAvatar");
+    if (avatarPath) {
+      document.getElementById("userAvatar").src = avatarPath;
+    } else {
+      document.getElementById("userAvatar").style.display = "none";
+    }
+  </script>
+</body>
+</html>

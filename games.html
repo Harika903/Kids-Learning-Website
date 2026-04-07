@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Find the Letter Game</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #d4fc79, #96e6a1);
+      text-align: center;
+    }
+
+    #pointsDisplay {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #ffeb3b;
+      color: black;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      z-index: 999;
+    }
+
+    h1 {
+      margin-top: 50px;
+      color: #2e7d32;
+    }
+
+    #levelSelect {
+      margin: 20px auto;
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+    }
+
+    #question {
+      font-size: 2rem;
+      margin: 20px;
+      color: #1b5e20;
+    }
+
+    #buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .letter-btn {
+      background-color: #81c784;
+      border: none;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 10px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .letter-btn:hover {
+      background-color: #66bb6a;
+    }
+
+    #message {
+      font-size: 1.4rem;
+      margin-top: 20px;
+    }
+
+    #backBtn {
+      margin-top: 30px;
+      padding: 12px 24px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #backBtn:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+  <img id="userAvatar" alt="Your Avatar" width="60" height="60" style="border-radius: 60%; position: fixed; top: 60px; right: 40px; z-index: 999;">
+<div id="pointsDisplay">🏆 Points: <span id="pointsValue">0</span></div>
+
+<h1>🔠 Find the Letter!</h1>
+
+<select id="levelSelect" onchange="generateQuestion()">
+  <option value="easy">🟢 Easy</option>
+  <option value="medium" selected>🟡 Medium</option>
+  <option value="hard">🔴 Hard</option>
+</select>
+
+<div id="question">Loading...</div>
+<div id="buttons"></div>
+<div id="message"></div>
+
+<button id="backBtn" onclick="goBack()">⬅ Back to Learn</button>
+
+<audio id="correctSound" src="sounds/clap.mp3"></audio>
+<audio id="wrongSound" src="sounds/wrong.mp3"></audio>
+
+<script>
+  const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  let correctLetter = '';
+  let optionCount = 6;
+
+  function getLevelCount() {
+    const level = document.getElementById("levelSelect").value;
+    if (level === "easy") return 3;
+    if (level === "medium") return 6;
+    return 9;
+  }
+
+  function generateQuestion() {
+    correctLetter = allLetters[Math.floor(Math.random() * allLetters.length)];
+    document.getElementById("question").innerText = `Find the letter: ${correctLetter}`;
+    createOptions();
+    document.getElementById("message").innerText = '';
+  }
+
+  function createOptions() {
+    const buttonsContainer = document.getElementById("buttons");
+    buttonsContainer.innerHTML = '';
+    const totalOptions = getLevelCount();
+    const options = new Set();
+    options.add(correctLetter);
+
+    while (options.size < totalOptions) {
+      options.add(allLetters[Math.floor(Math.random() * allLetters.length)]);
+    }
+
+    Array.from(options).sort(() => 0.5 - Math.random()).forEach(letter => {
+      const btn = document.createElement("button");
+      btn.className = "letter-btn";
+      btn.innerText = letter;
+      btn.onclick = () => checkAnswer(letter);
+      buttonsContainer.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selected) {
+    if (selected === correctLetter) {
+      playSound("correct");
+      addPoints(1);
+      document.getElementById("message").innerText = "✅ Correct!";
+    } else {
+      playSound("wrong");
+      document.getElementById("message").innerText = "❌ Try Again!";
+    }
+
+    setTimeout(generateQuestion, 1000);
+  }
+
+  function playSound(type) {
+    const sound = document.getElementById(type === "correct" ? "correctSound" : "wrongSound");
+    sound.currentTime = 0;
+    sound.play();
+  }
+
+  function addPoints(p) {
+    let currentPoints = parseInt(localStorage.getItem("totalPoints")) || 0;
+    currentPoints += p;
+    localStorage.setItem("totalPoints", currentPoints);
+    updatePointsDisplay();
+  }
+
+  function updatePointsDisplay() {
+    document.getElementById("pointsValue").innerText = localStorage.getItem("totalPoints") || 0;
+  }
+
+  function goBack() {
+    window.location.href = "learn.html";
+  }
+
+  window.onload = () => {
+    updatePointsDisplay();
+    generateQuestion();
+  };
+  // Avatar script
+    const avatarPath = localStorage.getItem("kidAvatar");
+    if (avatarPath) {
+      document.getElementById("userAvatar").src = avatarPath;
+    } else {
+      document.getElementById("userAvatar").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
